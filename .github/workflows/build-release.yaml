@@ -15,7 +15,8 @@ jobs:
   parse_release_tag:
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.parse-release-tag.outputs.tag }}
+      ref: ${{ steps.parse-release-tag.outputs.REF_NAME }}
+      baikal-version: ${{ steps.parse-release-tag.outputs.BAIKAL_VERSION }}
     steps:
       - name: Parse release tag
         id: parse-release-tag
@@ -23,26 +24,30 @@ jobs:
           if [ "${{ github.event_name }}" == "release" ]
           then
             # Get the release version by stripping build metadata from the release name
-            REF_NAME=${GITHUB_REF_NAME/+*/}
             echo Parsing tag from release ref $REF_NAME
+            REF_NAME=$GITHUB_REF_NAME
           else
             # Get the latest release version from the GitHub API
-            REF_NAME=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.tag_name')
             echo Parsing tag from latest release ref $REF_NAME
+            REF_NAME=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.tag_name')
           fi
-          echo tag=$REF_NAME >> "$GITHUB_OUTPUT"
+
+          BAIKAL_VERSION=${REF_NAME/+*/}
+          echo Parsed Baikal version $BAIKAL_VERSION from release $REF_NAME
+          echo REF_NAME=REF_NAME >> "$GITHUB_OUTPUT"
+          echo BAIKAL_VERSION=REF_NAME >> "$GITHUB_OUTPUT"
 
   apache:
     name: Apache
     needs: parse_release_tag
     uses: ./.github/workflows/build-job.yaml
     with:
-      ref: ${{ needs.parse_release_tag.outputs.tag }}
+      ref: ${{ needs.parse_release_tag.outputs.ref }}
       dockerfile: apache.dockerfile
       baikal-version: ${{ github.ref_name }}
       tags: |
-        ckulka/baikal:${{ needs.parse_release_tag.outputs.tag }}-apache
-        ckulka/baikal:${{ needs.parse_release_tag.outputs.tag }}
+        ckulka/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-apache
+        ckulka/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}
     secrets: inherit
 
   # apache_php82:
