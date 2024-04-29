@@ -44,7 +44,7 @@ jobs:
     with:
       ref: ${{ needs.parse_release_tag.outputs.ref }}
       dockerfile: apache.dockerfile
-      baikal-version: ${{ github.ref_name }}
+      baikal-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
       tags: |
         ckulka/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-apache
         ckulka/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}
