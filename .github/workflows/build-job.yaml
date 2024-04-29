@@ -14,23 +14,28 @@ on:
         description: Baikal version
         required: true
         type: string
-    secrets:
-      DOCKERHUB_USERNAME:
-        description: DockerHub username
-        required: true
-      DOCKERHUB_PASSWORD:
-        description: DockerHub password
-        required: true
+      ref:
+        description: Git reference to build
+        default: ${{ github.ref }}
+        type: string
+    # secrets:
+    #   DOCKERHUB_USERNAME:
+    #     description: DockerHub username
+    #     required: true
+    #   DOCKERHUB_PASSWORD:
+    #     description: DockerHub password
+    #     required: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Building ${{ inputs.dockerfile }}"
+      - run: echo "Building ${{ inputs.dockerfile }} from ${{ inputs.ref }}"
 
-      # - uses: actions/checkout@v4
-      #   with:
-      #     show-progress: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          show-progress: false
 
       # # See https://github.com/docker/setup-qemu-action
       # - name: Set up QEMU
