@@ -17,16 +17,27 @@ jobs:
     outputs:
       tag: ${{ steps.parse-release-tag.outputs.tag }}
     steps:
-      # Get the release version by stripping build metadata from the release name
       - name: Parse release tag
         id: parse-release-tag
-        run: echo tag=${GITHUB_REF_NAME/+*/} >> "$GITHUB_OUTPUT"
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]
+          then
+            # Get the release version by stripping build metadata from the release name
+            REF_NAME=${GITHUB_REF_NAME/+*/}
+            echo Parsing tag from release ref $REF_NAME
+          else
+            # Get the latest release version from the GitHub API
+            REF_NAME=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.tag_name')
+            echo Parsing tag from latest release ref $REF_NAME
+          fi
+          echo tag=$REF_NAME >> "$GITHUB_OUTPUT"
 
   apache:
     name: Apache
     needs: parse_release_tag
     uses: ./.github/workflows/build-job.yaml
     with:
+      ref: ${{ needs.parse_release_tag.outputs.tag }}
       dockerfile: apache.dockerfile
       baikal-version: ${{ github.ref_name }}
       tags: |
