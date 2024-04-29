@@ -30,7 +30,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Building ${{ inputs.dockerfile }} from ${{ inputs.ref }}"
+      - run: echo "Building ${{ inputs.dockerfile }} (${{ inputs.baikal-version }}) from ${{ inputs.ref }}"
 
       - uses: actions/checkout@v4
         with:
